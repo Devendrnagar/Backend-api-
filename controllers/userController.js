@@ -72,8 +72,8 @@ class UserController {
 
   static userLogin = async (req, res) => {
     try {
-      const { email, password } = req.body
-      if (email && password) {
+      const { email, password , UserName} = req.body
+      if (email && password && UserName) {
         const user = await UserModel.findOne({ email: email ,UserName:UserName })
         if (user != null) {
           const isMatch = await bcrypt.compare(password, user.password)
