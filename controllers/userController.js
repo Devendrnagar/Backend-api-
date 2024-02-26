@@ -74,10 +74,10 @@ class UserController {
     try {
       const { email, password } = req.body
       if (email && password) {
-        const user = await UserModel.findOne({ email: email })
+        const user = await UserModel.findOne({ email: email ,UserName:UserName })
         if (user != null) {
           const isMatch = await bcrypt.compare(password, user.password)
-          if ((user.email === email) && isMatch) {
+          if ((user.email === email) &&(user.UserName === UserName)&& isMatch) {
             // Generate JWT Token
             const token = jwt.sign({ userID: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '5d' })
             res.send({ "status": "success", "message": "Login Success", "token": token })
