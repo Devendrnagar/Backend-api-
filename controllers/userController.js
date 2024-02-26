@@ -3,11 +3,14 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
 class UserController {
+
+
+
   static userRegistration = async (req, res) => {
 
-    const { name, UserName, email, password, password_confirmation } = req.body
+    const { name, username, email, password, password_confirmation } = req.body
 
-    console.log({ name, UserName, email, password, password_confirmation, body: req.body })
+    console.log({ name, username, email, password, password_confirmation, body: req.body })
 
     const user = await UserModel.findOne({ email: email })
 
@@ -23,7 +26,7 @@ class UserController {
 
     else {
 
-      if (name && UserName && email && password && password_confirmation) {
+      if (name && username && email && password && password_confirmation) {
 
         if (password === password_confirmation) {
 
@@ -36,7 +39,7 @@ class UserController {
 
             const doc = new UserModel({
               name: name,
-              UserName: UserName,
+              username: username,
               email: email,
               password: hashPassword,
 
@@ -72,24 +75,34 @@ class UserController {
 
   static userLogin = async (req, res) => {
     try {
-      const { email, password , UserName} = req.body
-      if (email && password && UserName) {
-        const user = await UserModel.findOne({ email: email ,UserName:UserName })
-        if (user != null) {
+      const {  password, username } = req.body
+      if (password && username) {
+
+        const user = await UserModel.findOne({
+          $or: [
+            { username },
+            { email: username }
+          ]
+         })
+        if (user) {
           const isMatch = await bcrypt.compare(password, user.password)
-          if ((user.email === email) &&(user.UserName === UserName)&& isMatch) {
+
+          if ( isMatch) {
             // Generate JWT Token
             const token = jwt.sign({ userID: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '5d' })
             res.send({ "status": "success", "message": "Login Success", "token": token })
+
           } else {
             res.send({ "status": "failed", "message": "Email or Password is not Valid" })
           }
+
         } else {
           res.send({ "status": "failed", "message": "You are not a Registered User" })
         }
       } else {
         res.send({ "status": "failed", "message": "All Fields are Required" })
       }
+
     } catch (error) {
       console.log(error)
       res.send({ "status": "failed", "message": "Unable to Login" })
